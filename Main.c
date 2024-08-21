@@ -293,5 +293,5 @@ void liberarGrafo(Gr* grafo) {
     free(grafo->usuarios);
     free(grafo->listasAdjacente);
 
-    free(grafo);
+    free(grafo);// liberar grafo
 }
