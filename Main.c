@@ -6,6 +6,9 @@
 #include <time.h>
 
 #define NUMERO_USUARIOS 20
+#define BRANCO 0
+#define CINZA 1
+#define PRETO 2
 
 typedef struct Usuario {
     int id;
@@ -20,27 +23,27 @@ typedef struct NoAdjacente {
 typedef struct Grafo {
     Usuario** usuarios;
     NoAdjacente** listasAdjacente;
-} Gr;
+} Grafo;
 
-Gr* criarGrafo();
-void liberarGrafo(Gr* grafo);
+Grafo* criarGrafo();
+void liberarGrafo(Grafo* grafo);
 Usuario* criarUsuario(int id, char* nome);
 NoAdjacente* criarNovoNode(Usuario* user);
-void adicionarUsuario(Gr* grafo, char* nome, int numero);
+void adicionarUsuario(Grafo* grafo, char* nome, int numero);
 bool existeConexao(NoAdjacente* lista, int destinoId);
-void addConexao(Gr* grafo, int origem, int destino);
-void gerarConexoesAleatorias(Gr* grafo, unsigned semente);
-void imprimirListaAdjacencia(Gr* grafo);
+void addConexao(Grafo* grafo, int origem, int destino);
+void gerarConexoesAleatorias(Grafo* grafo, unsigned semente);
+void imprimirListaAdjacencia(Grafo* grafo);
 //Busca em Largura
-void BFS(Gr* grafo, int origemId, int destinoId, int* anterior);
-void encontrarCaminhoMaisCurto(Gr* grafo, int origemId, int destinoId);
+void BFS(Grafo* grafo, int origemId, int destinoId, int* anterior);
+void encontrarCaminhoMaisCurto(Grafo* grafo, int origemId, int destinoId);
 //Busca em Profundidade
-void DFS(Gr* grafo, int atualId, int destinoId, bool* visitado, int* caminho, int* indexCaminho, int* caminhoMaisLongo, int* tamanhoCaminhoMaisLongo);
-void encontrarCaminhoMaisLongo(Gr* grafo, int origemId, int destinoId);
+void DFS(Grafo* grafo, int atualId, int destinoId, int* cor, int* caminho, int* indexCaminho, int* caminhoMaisLongo, int* tamanhoCaminhoMaisLongo);
+void encontrarCaminhoMaisLongo(Grafo* grafo, int origemId, int destinoId);
 
 int main() {
 
-    Gr* grafo = criarGrafo();
+    Grafo* grafo = criarGrafo();
     char* nomes[NUMERO_USUARIOS] = {"Carolina", "Luan", "Fernanda", "Yasmin", "Enzo", "Tomas",
                                     "Julia", "Rafaela", "Felipe", "Renan", "Daniel", "Bianca",
                                     "Guilherme", "Kaua", "Estevan", "Melissa", "Diego",
@@ -56,38 +59,39 @@ int main() {
     imprimirListaAdjacencia(grafo);
 
     printf("\n");
-    int user1;
-    int user2;
-    int isUser1Valid = 0;
-    int isUser2Valid = 0;
+    int usuarioOrigem;
+    int usuarioDestino;
+    int isUsuarioOrigemValido = 0;
+    int isUsuarioDestinoValido = 0;
     do {
         printf("Informe o ID do usuario de origem: ");
-        scanf("%d", &user1);
-        if (user1 >= 0 && user1 < NUMERO_USUARIOS) {
-            isUser1Valid = 1;
+        scanf("%d", &usuarioOrigem);
+        if (usuarioOrigem >= 0 && usuarioOrigem < NUMERO_USUARIOS) {
+            isUsuarioOrigemValido = 1;
         } else {
             printf("Usuario invalido. Tente digitar um ID entre 0 e 19.\n");
         }
-    } while (!isUser1Valid);
+    } while (!isUsuarioOrigemValido);
 
     do {
         printf("Informe o ID do usuario de destino: ");
-        scanf("%d", &user2);
-        if (user2 >= 0 && user2 < NUMERO_USUARIOS && user1 != user2) {
-            isUser2Valid = 1;
+        scanf("%d", &usuarioDestino);
+        if (usuarioDestino >= 0 && usuarioDestino < NUMERO_USUARIOS && usuarioOrigem != usuarioDestino) {
+            isUsuarioDestinoValido = 1;
         }else {
             printf("Usuario invalido. Tente digitar um ID entre 0 e 19 e que seja diferente do ID de origem.\n");
         }
-    } while (!isUser2Valid);
+    } while (!isUsuarioDestinoValido);
 
-    encontrarCaminhoMaisCurto(grafo, user1, user2);
-    encontrarCaminhoMaisLongo(grafo, user1, user2);
+    encontrarCaminhoMaisCurto(grafo, usuarioOrigem, usuarioDestino);
+    encontrarCaminhoMaisLongo(grafo, usuarioOrigem, usuarioDestino);
 
     liberarGrafo(grafo);
     return 0;
 }
-Gr* criarGrafo() {
-    Gr* novoGrafo = (Gr*)malloc(sizeof(Gr));
+
+Grafo* criarGrafo() {
+    Grafo* novoGrafo = (Grafo*)malloc(sizeof(Grafo));
     novoGrafo->usuarios = (Usuario**)malloc(NUMERO_USUARIOS * sizeof(Usuario*));
     novoGrafo->listasAdjacente = (NoAdjacente**)malloc(NUMERO_USUARIOS * sizeof(NoAdjacente*));
 
@@ -112,7 +116,7 @@ NoAdjacente* criarNovoNode(Usuario* user) {
     return novoNode;
 }
 
-void adicionarUsuario(Gr* grafo, char* nome, int numero) {
+void adicionarUsuario(Grafo* grafo, char* nome, int numero) {
     Usuario* novoUsuario = criarUsuario(numero, nome);
     grafo->usuarios[numero] = novoUsuario;
     grafo->listasAdjacente[numero] = NULL;
@@ -129,7 +133,7 @@ bool existeConexao(NoAdjacente* lista, int destinoId) {
     return false;
 }
 
-void addConexao(Gr* grafo, int origem, int destino) {
+void addConexao(Grafo* grafo, int origem, int destino) {
     if (origem >= NUMERO_USUARIOS || destino >= NUMERO_USUARIOS || origem == destino) {
         return;
     }
@@ -145,7 +149,7 @@ void addConexao(Gr* grafo, int origem, int destino) {
     }
 }
 
-void gerarConexoesAleatorias(Gr* grafo, unsigned semente) {
+void gerarConexoesAleatorias(Grafo* grafo, unsigned semente) {
     srand(semente);
     int numConexoes = rand() % (NUMERO_USUARIOS * 2) + NUMERO_USUARIOS;
     for (int i = 0; i < numConexoes; i++) {
@@ -156,7 +160,7 @@ void gerarConexoesAleatorias(Gr* grafo, unsigned semente) {
 }
 
 
-void imprimirListaAdjacencia(Gr* grafo) {
+void imprimirListaAdjacencia(Grafo* grafo) {
     for (int i = 0; i < NUMERO_USUARIOS; i++) {
         Usuario* usuario = grafo->usuarios[i];
         if (usuario != NULL) {
@@ -174,35 +178,36 @@ void imprimirListaAdjacencia(Gr* grafo) {
     }
 }
 
-void BFS(Gr* grafo, int origemId, int destinoId, int* anterior) {
-    bool visitado[NUMERO_USUARIOS];
+void BFS(Grafo* grafo, int origemId, int destinoId, int* anterior) {
+    int cor[NUMERO_USUARIOS];
     for (int i = 0; i < NUMERO_USUARIOS; i++) {
-        visitado[i] = false;
+        cor[i] = BRANCO;
         anterior[i] = -1;
     }
 
     int fila[NUMERO_USUARIOS];
     int cabeca = 0, cauda = 0;
     fila[cauda++] = origemId;
-    visitado[origemId] = true;
+    cor[origemId] = CINZA;
 
     while (cabeca < cauda) {
         int atual = fila[cabeca++];
         NoAdjacente* adjacente = grafo->listasAdjacente[atual];
         while (adjacente != NULL) {
             int adjacenteId = adjacente->usuario->id;
-            if (!visitado[adjacenteId]) {
+            if (cor[adjacenteId] == BRANCO) {
                 fila[cauda++] = adjacenteId;
-                visitado[adjacenteId] = true;
+                cor[adjacenteId] = CINZA;
                 anterior[adjacenteId] = atual;
                 if (adjacenteId == destinoId) return;
             }
             adjacente = adjacente->proximo;
         }
+        cor[atual] = PRETO;
     }
 }
 
-void encontrarCaminhoMaisCurto(Gr* grafo, int origemId, int destinoId) {
+void encontrarCaminhoMaisCurto(Grafo* grafo, int origemId, int destinoId) {
     int anterior[NUMERO_USUARIOS];
     BFS(grafo, origemId, destinoId, anterior);
 
@@ -213,8 +218,8 @@ void encontrarCaminhoMaisCurto(Gr* grafo, int origemId, int destinoId) {
 
     int caminho[NUMERO_USUARIOS];
     int tamanhoCaminho = 0;
-    for (int at = destinoId; at != -1; at = anterior[at]) {
-        caminho[tamanhoCaminho++] = at;
+    for (int i = destinoId; i != -1; i = anterior[i]) {
+        caminho[tamanhoCaminho++] = i;
     }
 
     printf("Caminho mais curto entre %d e %d: ", origemId, destinoId);
@@ -225,8 +230,8 @@ void encontrarCaminhoMaisCurto(Gr* grafo, int origemId, int destinoId) {
     printf("\n");
 }
 
-void DFS(Gr* grafo, int atualId, int destinoId, bool* visitado, int* caminho, int* indexCaminho, int* caminhoMaisLongo, int* tamanhoCaminhoMaisLongo) {
-    visitado[atualId] = true;
+void DFS(Grafo* grafo, int atualId, int destinoId, int* cor, int* caminho, int* indexCaminho, int* caminhoMaisLongo, int* tamanhoCaminhoMaisLongo) {
+    cor[atualId] = CINZA;
     caminho[(*indexCaminho)++] = atualId;
 
     if (atualId == destinoId) {
@@ -240,25 +245,29 @@ void DFS(Gr* grafo, int atualId, int destinoId, bool* visitado, int* caminho, in
         NoAdjacente* adjacente = grafo->listasAdjacente[atualId];
         while (adjacente != NULL) {
             int adjacenteId = adjacente->usuario->id;
-            if (!visitado[adjacenteId]) {
-                DFS(grafo, adjacenteId, destinoId, visitado, caminho, indexCaminho, caminhoMaisLongo, tamanhoCaminhoMaisLongo);
+            if (cor[adjacenteId] == BRANCO) {
+                DFS(grafo, adjacenteId, destinoId, cor, caminho, indexCaminho, caminhoMaisLongo, tamanhoCaminhoMaisLongo);
             }
             adjacente = adjacente->proximo;
         }
     }
 
     (*indexCaminho)--;
-    visitado[atualId] = false;
+    cor[atualId] = PRETO;
 }
 
-void encontrarCaminhoMaisLongo(Gr* grafo, int origemId, int destinoId) {
-    bool visitado[NUMERO_USUARIOS] = {false};
+void encontrarCaminhoMaisLongo(Grafo* grafo, int origemId, int destinoId) {
+    int cor[NUMERO_USUARIOS];
+    for (int i = 0; i < NUMERO_USUARIOS; i++) {
+        cor[i] = BRANCO;
+    }
+
     int caminho[NUMERO_USUARIOS];
     int caminhoMaisLongo[NUMERO_USUARIOS];
     int indexCaminho = 0;
     int tamanhoCaminhoMaisLongo = 0;
 
-    DFS(grafo, origemId, destinoId, visitado, caminho, &indexCaminho, caminhoMaisLongo, &tamanhoCaminhoMaisLongo);
+    DFS(grafo, origemId, destinoId, cor, caminho, &indexCaminho, caminhoMaisLongo, &tamanhoCaminhoMaisLongo);
 
     if (tamanhoCaminhoMaisLongo == 0) {
         printf("Nao ha conexao entre os usuarios %d e %d\n", origemId, destinoId);
@@ -273,7 +282,7 @@ void encontrarCaminhoMaisLongo(Gr* grafo, int origemId, int destinoId) {
     printf("\n");
 }
 
-void liberarGrafo(Gr* grafo) {
+void liberarGrafo(Grafo* grafo) {
     if (grafo == NULL) {
         return;
     }
@@ -293,5 +302,5 @@ void liberarGrafo(Gr* grafo) {
     free(grafo->usuarios);
     free(grafo->listasAdjacente);
 
-    free(grafo);// liberar grafo
+    free(grafo);
 }
