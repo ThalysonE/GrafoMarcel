@@ -23,7 +23,6 @@ typedef struct Grafo{
 } Gr;
 
 //Função para criar grafo
-
 Gr* criarGrafo(){
     Gr* novoGr= (Gr*)malloc(sizeof(Gr));
     if(novoGr == NULL){
@@ -86,8 +85,8 @@ void imprimirListaAdjacencia(Gr* grafo) {
         if(grafo->adjLists[i] != NULL){ // verifica se o usuario possui alguma conexão
             Usuario *usuario = grafo->usuarios[i];
             if (usuario != NULL) {
-                printf("Usuario %d (%s): ", usuario->id, usuario->nome);
-                AdjNode *adj = grafo->adjLists[i];
+                printf("Usuario %d (%s): ", usuAdjNode *adj = grafo->adjLists[i];ario->id, usuario->nome);
+
                 while (adj != NULL) {
                     printf("%d (%s) ", adj->usuario->id, adj->usuario->nome);
                     adj = adj->prox;
@@ -96,6 +95,34 @@ void imprimirListaAdjacencia(Gr* grafo) {
             }
         }
     }
+}
+void buscaLargura_Grafo(Gr *gr, int ini, int *visitado){
+    int i, vert, NV, cont=1,*fila, IF=0, FF=0;
+    //Marca vértives como NAO visitados
+    for(i=0; i < NUM_Usuarios; i++)
+        visitado[i] = 0;
+    //Cria fila. Visita e insere "ini" na fila
+    NV = NUM_Usuarios;
+    fila = (int*) malloc(NV * sizeof (int));
+    FF++;
+    fila[FF] = ini;
+    visitado [ini] = cont;
+
+    while(IF != FF){
+        //Pega primeiro da fila
+        IF = (IF+1) % NV;
+        vert = fila[IF];
+        cont++;
+        //Visita os vizinhos ainda não visitados e coloca na fila
+        for(i=0; i<gr->grau[vert]; i++){
+            if(!visitado[gr->arestas[vert][i]]){
+                FF = (FF+1) % NV;
+                fila[FF] = gr->arestas[vert][i];
+                visitado[gr->arestas[vert][i]] = cont;
+            }
+        }
+    }
+    free(fila);
 }
 void main (){
     Gr* grafo = criarGrafo();
@@ -119,10 +146,13 @@ void main (){
             cont = 0;
         }
     }
+
     addConexao(grafo, 11, 7);
     addConexao(grafo,14,19);
     addConexao(grafo,14,17);
     addConexao(grafo,3,2);
+    addConexao(grafo, 14, 8);
+    addConexao(grafo,11,19);
     printf("\n\n");
     imprimirListaAdjacencia(grafo);
 }
