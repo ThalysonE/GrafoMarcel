@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+
 
 #define NUM_Usuarios 20
 // Estrutura para um usuário
@@ -83,7 +83,22 @@ void addConexao(Gr* grafo, int orig, int dest){
     novoNode->prox = grafo->adjLists[dest];
     grafo->adjLists[dest] = novoNode;
 }
-
+void imprimirListaAdjacencia(Gr* grafo) {
+    for (int i = 0; i < NUM_Usuarios; i++) {
+        if(grafo->adjLists[i] != NULL){
+            Usuario *usuario = grafo->usuarios[i];
+            if (usuario != NULL) {
+                printf("Usuario %d (%s): ", usuario->id, usuario->nome);
+                AdjNode *adj = grafo->adjLists[i];
+                while (adj != NULL) {
+                    printf("%d (%s) ", adj->usuario->id, adj->usuario->nome);
+                    adj = adj->prox;
+                }
+                printf("\n");
+            }
+        }
+    }
+}
 void main (){
     Gr* grafo = criarGrafo();
     char* nomes[NUM_Usuarios] = {"Carolina","Luan","Fernanda","Yasmin","Enzo","Tomas",
@@ -91,15 +106,27 @@ void main (){
                                  "Guilherme", "Kaua", "Estevan","Melissa","Diego",
                                  "Carlos","Giovana", "Gabriel"};
 
-    srand(time(NULL));
     for(int i = 0; i < NUM_Usuarios; i++){
-        int indiceAleatorio = rand() % NUM_Usuarios;
-        char* nome= nomes[indiceAleatorio];
-        addUsuario(grafo, nome, i);
+        addUsuario(grafo, nomes[i], i);
     }
-    for(int i =0; i < NUM_Usuarios; i++ ){
-        printf("%s\n",grafo->usuarios[i]->nome);
+
+    //TESTES
+    int cont = 0;
+    //imprime todos os usuarios e seus respectivos Id
+    for(int i =0; i < NUM_Usuarios; i++){
+        printf("%d - %s  |  ",grafo->usuarios[i]->id,grafo->usuarios[i]->nome);
+        cont++;
+        if(cont == 7){
+            printf("\n");
+            cont = 0;
+        }
     }
+    addConexao(grafo, 11, 7);
+    addConexao(grafo,14,19);
+    addConexao(grafo,14,17);
+    addConexao(grafo,3,2);
+    printf("\n\n");
+    imprimirListaAdjacencia(grafo);
 }
 
 
