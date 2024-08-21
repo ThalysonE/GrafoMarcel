@@ -22,8 +22,6 @@ typedef struct Grafo{
     AdjNode** adjLists;     // Array de listas de adjacência
 } Gr;
 
-
-
 //Função para criar grafo
 
 Gr* criarGrafo(){
@@ -68,24 +66,24 @@ void addUsuario(Gr*grafo, char* nome, int num){
     grafo->usuarios[num] = novoUser;
     grafo->adjLists[num] = NULL;
 }
-
-
 //Funcao para adicionar uma conexão entre usuarios
 void addConexao(Gr* grafo, int orig, int dest){
     if(orig >= NUM_Usuarios || dest >= NUM_Usuarios){
         return;
     }
+    //Adiciona a conexão da origem para o destino
     AdjNode * novoNode = criarNovoNode(grafo->usuarios[dest]);
     novoNode->prox = grafo->adjLists[orig];
     grafo->adjLists[orig] = novoNode;
 
+    //Como o grafo é não direcional adiciona-se a conexão inversa
     novoNode = criarNovoNode(grafo->usuarios[orig]);
     novoNode->prox = grafo->adjLists[dest];
     grafo->adjLists[dest] = novoNode;
 }
 void imprimirListaAdjacencia(Gr* grafo) {
     for (int i = 0; i < NUM_Usuarios; i++) {
-        if(grafo->adjLists[i] != NULL){
+        if(grafo->adjLists[i] != NULL){ // verifica se o usuario possui alguma conexão
             Usuario *usuario = grafo->usuarios[i];
             if (usuario != NULL) {
                 printf("Usuario %d (%s): ", usuario->id, usuario->nome);
